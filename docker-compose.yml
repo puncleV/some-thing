@@ -1,8 +1,23 @@
 version: "3"
 
 services:
-  task-management:
-    container_name: task-management
-    build: .
+#  task-management:
+#    container_name: task-management
+#    build: .
+#    ports:
+#      - 3000:3000
+  database:
+    image: postgres
+    container_name: task-management-db
+    restart: always
+    environment:
+      - POSTGRES_USER=api
+      - POSTGRES_PASSWORD=apipassword
+      - POSTGRES_DB=task-management-db
     ports:
-      - 3000:3000
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+volumes:
+  db-data:
+    driver: local
