@@ -8,7 +8,13 @@ export class TasksService {
   private tasks: Task[] = [];
 
   getById(id: Task["id"]): Task {
-    return this.tasks.find((t) => t.id === id);
+    const task = this.tasks.find((t) => t.id === id);
+
+    if (!task) {
+      throw new Error(`Cant find task with id: ${id}`);
+    }
+
+    return task;
   }
 
   getAll(): Task[] {
@@ -31,5 +37,13 @@ export class TasksService {
     this.tasks = this.tasks.filter((t) => t.id !== id);
 
     return this.tasks;
+  }
+
+  updateStatus(id: Task["id"], status: TasksStatus) {
+    const task = this.getById(id);
+
+    task.status = status;
+
+    return task;
   }
 }
