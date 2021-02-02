@@ -1,70 +1,33 @@
 import * as uuid from "uuid";
 
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Task, TasksStatus } from "./task.model";
+import { TaskStatus } from "./types";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { GetTasksFilterDto } from "./dto/get-tasks-filter.dto";
+import { TaskRepository } from "./task.repository";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Task } from "./task.entity";
 
 @Injectable()
 export class TasksService {
-  private tasks: Task[] = [];
+  constructor(
+    @InjectRepository(TaskRepository)
+    private taskRepository: TaskRepository,
+  ) {}
 
-  getById(id: string): Task {
-    const task = this.tasks.find((t) => t.id === id);
+  async getById(id: number): Promise<Task> {
+    const task = await this.taskRepository.findOne(id);
 
-    if (!task) {
-      throw new NotFoundException(`Cant find task with id: ${id}`);
+    if (task == null) {
+      throw new NotFoundException(`No tasks with id: "${id}"`);
     }
 
     return task;
   }
 
-  getAll(): Task[] {
-    return this.tasks;
-  }
+  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+    const newTask = this.taskRepository.create(createTaskDto);
 
-  getWithFilters(filterDto: GetTasksFilterDto): Task[] {
-    let tasks = [];
-
-    if (filterDto.status) {
-      tasks = this.tasks.filter((t) => t.status === filterDto.status);
-    }
-
-    if (filterDto.search) {
-      tasks = [
-        ...tasks,
-        ...this.tasks.filter((t) => t.title.includes(filterDto.search) || t.description.includes(filterDto.search)),
-      ];
-    }
-
-    return tasks;
-  }
-
-  create(createTaskDto: CreateTaskDto) {
-    const task: Task = {
-      id: uuid.v4(),
-      status: TasksStatus.OPEN,
-      ...createTaskDto,
-    };
-
-    this.tasks.push(task);
-
-    return task;
-  }
-
-  deleteById(id: string): Task[] {
-    const task = this.getById(id);
-
-    this.tasks = this.tasks.filter((t) => t.id !== task.id);
-
-    return this.tasks;
-  }
-
-  updateStatus(id: string, status: TasksStatus) {
-    const task = this.getById(id);
-
-    task.status = status;
-
-    return task;
+    return newTask.save();
   }
 }
