@@ -48,7 +48,9 @@
     "eslint": "^7.12.1",
     "eslint-config-prettier": "7.2.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "husky": "4.3.8",
     "jest": "^26.6.3",
+    "lint-staged": "10.5.3",
     "prettier": "^2.1.2",
     "supertest": "^6.0.0",
     "ts-jest": "^26.4.3",
@@ -72,6 +74,20 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "lint-staged": {
+      "*.ts": [
+        "prettier --config .prettierrc --write",
+        "./node_modules/.bin/eslint --fix --fix --ext .ts",
+        "git add"
+      ]
+    },
+    "husky": {
+      "hooks": {
+        "post-checkout": "npm i",
+        "post-merge": "npm i",
+        "pre-commit": "lint-staged"
+      }
+    }
   }
 }
