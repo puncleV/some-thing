@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 
@@ -30,7 +30,7 @@ export class AuthService {
     }
 
     if (!(await this.validatePassword(user, password))) {
-      throw new NotFoundException(`Can't find a user with passed username and password`);
+      throw new UnauthorizedException(`Invalid credentials`);
     }
 
     return username;
