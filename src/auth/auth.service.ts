@@ -5,9 +5,14 @@ import * as bcrypt from "bcrypt";
 import { UserRepository } from "./user.repository";
 import { AuthCredentialsDto } from "./dto/auth.credentials.dto";
 import { User } from "./user.entity";
+import { JwtService } from "@nestjs/jwt";
+import { IJwtPayload } from "./jwt-payload.interface";
 @Injectable()
 export class AuthService {
-  constructor(@InjectRepository(UserRepository) private userRepository: UserRepository) {}
+  constructor(
+    @InjectRepository(UserRepository) private userRepository: UserRepository,
+    private jwtService: JwtService,
+  ) {}
 
   async signUp({ username, password }: AuthCredentialsDto) {
     const salt = await bcrypt.genSalt();
@@ -22,7 +27,7 @@ export class AuthService {
     );
   }
 
-  async signIn({ username, password }: AuthCredentialsDto) {
+  async signIn({ username, password }: AuthCredentialsDto): Promise<{ accessToken: string }> {
     const user = await this.userRepository.findOne({ username: username });
 
     if (!user) {
@@ -33,7 +38,10 @@ export class AuthService {
       throw new UnauthorizedException(`Invalid credentials`);
     }
 
-    return username;
+    const payload: IJwtPayload = { username };
+    const accessToken = await this.jwtService.sign(payload);
+
+    return { accessToken };
   }
 
   private async validatePassword(user: User, password: string) {
